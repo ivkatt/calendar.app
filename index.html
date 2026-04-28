@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>Работен Календар</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+:root {
+  --cream: #faf7f4;
+  --surface: #ffffff;
+  --brown-deep: #3d2f27;
+  --brown-mid: #7a5c4e;
+  --peach-light: #f4e1d6;
+  --office-color: #3b7dd8;
+  --home-color: #2ea86b;
+  --duty-color: #9C27B0;
+  --vacation-color: #FF9800;
+  --weekend-color: #ffeb9e;
+  --holiday-color: #ee4f4a;
+  --local-holiday-color: #ef6c00;
+  --shadow: 0 8px 40px rgba(61,47,39,0.10);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+
+/* ── LOGIN ── */
+#auth {
+  background: var(--surface); border-radius: 24px;
+  padding: 52px 44px; box-shadow: var(--shadow);
+  width: 360px; text-align: center;
+}
+#auth h1 { font-size: 28px; font-weight: 700; color: var(--brown-deep); margin-bottom: 6px; letter-spacing: -0.5px; }
+#auth p  { color: #aaa; font-size: 14px; margin-bottom: 32px; }
+#auth input {
+  width: 100%; padding: 13px 18px;
+  border: 1.5px solid #ede8e5; border-radius: 12px;
+  font-family: inherit; font-size: 15px; margin-bottom: 12px;
+  outline: none; transition: border 0.2s; color: var(--brown-deep); background: #faf7f4;
+}
+#auth input:focus { border-color: var(--office-color); background: #fff; }
+#auth button {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #3b7dd8, #5a9af5);
+  color: white; border: none; border-radius: 12px;
+  font-family: inherit; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+}
+#auth button:hover { opacity: 0.88; transform: translateY(-1px); }
+#auth-error { color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+/* ── APP — two-column layout ── */
+#app {
+  display: none;
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 32px 36px;
+  box-shadow: var(--shadow);
+  width: 920px;
+  max-width: 100%;
+}
+
+/* Top bar: header + type buttons + legend — full width */
+.app-top { width: 100%; }
+
+/* Two-column body */
+.app-body {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.app-left  { flex: 1 1 auto; min-width: 0; }
+.app-right { flex: 0 0 230px; width: 230px; }
+
+/* ── HEADER ── */
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.cal-header h2 {
+  font-size: 22px; font-weight: 700; color: var(--brown-deep);
+  min-width: 200px; text-align: center; letter-spacing: -0.3px;
+}
+.nav-btn {
+  background: var(--peach-light); border: none; border-radius: 10px;
+  width: 38px; height: 38px; font-size: 20px; cursor: pointer;
+  color: var(--brown-mid); transition: background 0.2s, transform 0.1s; line-height: 1;
+}
+.nav-btn:hover { background: #e8c9b8; transform: scale(1.08); }
+
+/* ── TYPE BUTTONS ── */
+.type-buttons { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.type-btn {
+  padding: 8px 16px; border: 2px solid transparent; border-radius: 20px;
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  color: white; transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s; opacity: 0.55;
+}
+.type-btn:hover { opacity: 0.80; }
+.type-btn.active {
+  opacity: 1; border-color: rgba(0,0,0,0.22);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18); transform: translateY(-2px);
+}
+.type-btn.office   { background: var(--office-color); }
+.type-btn.home     { background: var(--home-color); }
+.type-btn.duty     { background: var(--duty-color); }
+.type-btn.vacation { background: var(--vacation-color); }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 0; padding: 10px 0;
+  border-top: 1px solid #f0ebe8; border-bottom: 1px solid #f0ebe8;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #999; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-dot.weekend  { background: var(--weekend-color); border: 1px solid #e0d080; }
+.legend-dot.holiday  { background: var(--holiday-color); }
+.legend-dot.local-h  { background: var(--local-holiday-color); }
+.legend-dot.office   { background: var(--office-color); }
+.legend-dot.home     { background: var(--home-color); }
+.legend-dot.duty     { background: var(--duty-color); }
+.legend-dot.vacation { background: var(--vacation-color); }
+
+/* ── CALENDAR TABLE ── */
+table { border-collapse: separate; border-spacing: 4px; width: 100%; }
+th { font-size: 11px; font-weight: 600; color: #c5b8b0; padding: 4px 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+td {
+  border-radius: 10px; width: 14.28%; height: 56px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--brown-deep);
+  transition: filter 0.15s, transform 0.12s;
+  position: relative; user-select: none; text-align: center; vertical-align: middle;
+}
+td:empty { cursor: default; pointer-events: none; }
+td:not(:empty):not(.no-click):hover { filter: brightness(0.88); transform: scale(1.09); z-index: 1; }
+
+td.weekend       { background: var(--weekend-color); color: #a89a60; font-weight: 400; }
+td.today         { outline: 2.5px solid var(--brown-deep); outline-offset: -2px; font-weight: 800; }
+td.holiday       { background: var(--holiday-color); color: white; cursor: default; pointer-events: none; }
+td.local-holiday { background: var(--local-holiday-color); color: white; cursor: default; pointer-events: none; }
+
+td.office   { background: var(--office-color); color: white; }
+td.home     { background: var(--home-color); color: white; }
+td.vacation { background: var(--vacation-color); color: white; }
+td.duty     { background: var(--duty-color); color: white; }
+
+td.weekend.duty { background: var(--duty-color); color: white; cursor: pointer; pointer-events: auto; }
+
+td.office.today, td.home.today, td.duty.today,
+td.vacation.today, td.holiday.today { outline-color: rgba(255,255,255,0.8); }
+
+td.holiday::after, td.local-holiday::after {
+  content: attr(data-label);
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--brown-deep); color: white;
+  padding: 4px 8px; border-radius: 6px; font-size: 11px;
+  white-space: nowrap; z-index: 10; pointer-events: none;
+  opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
+
+/* ── PANEL (right column) ── */
+.panel {
+  position: sticky;
+  top: 24px;
+}
+.panel-title {
+  font-size: 11px; font-weight: 600; color: #c5b8b0; margin-bottom: 12px;
+  text-align: center; text-transform: uppercase; letter-spacing: 1px;
+}
+
+.stat-meta { background: #f8f6f4; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+.stat-meta-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #777; padding: 5px 0;
+}
+.stat-meta-row + .stat-meta-row { border-top: 1px solid #ede8e5; }
+.stat-meta-row strong { color: var(--brown-deep); font-weight: 600; font-family: 'DM Mono', monospace; font-size: 13px; }
+.stat-meta-row.highlight strong { color: #1a6e3c; font-size: 14px; }
+
+.stat-divider { height: 1px; background: #f0ebe8; margin: 12px 0; }
+
+.stat-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.stat-label { font-size: 12px; color: #888; }
+.stat-val {
+  font-size: 13px; font-weight: 600; color: var(--brown-deep);
+  font-family: 'DM Mono', monospace;
+}
+.stat-val.over { color: #c0392b; }
+
+/* ── HOME LIMIT ALARM ── */
+#home-alarm {
+  display: none;
+  background: #fdecea; border: 1.5px solid #f5c6c4; border-radius: 10px;
+  padding: 8px 10px; margin: 4px 0;
+  font-size: 12px; font-weight: 600; color: #c0392b;
+  text-align: center; animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+.ratio-note { text-align: center; font-size: 10px; color: #bbb; margin-top: 4px; line-height: 1.4; }
+
+.clear-btn {
+  display: block; width: 100%; margin-top: 16px; padding: 10px 0;
+  background: #f7f0ee; border: none; border-radius: 10px;
+  font-family: inherit; font-size: 12px; color: #c0392b;
+  font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+.clear-btn:hover { background: #fde8e6; }
+
+/* ── HR button ── */
+.hr-btn {
+  display: block; width: 100%; margin-top: 10px; padding: 10px 0;
+  background: linear-gradient(135deg, #3b7dd8, #5a9af5);
+  color: white; border: none; border-radius: 10px;
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s; text-decoration: none;
+  text-align: center;
+}
+.hr-btn:hover { opacity: 0.85; }
+
+/* ── Reminder overlay ── */
+#reminder-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(61,47,39,0.45); backdrop-filter: blur(3px);
+  z-index: 100; align-items: center; justify-content: center;
+}
+#reminder-overlay.show { display: flex; }
+#reminder-box {
+  background: white; border-radius: 20px;
+  padding: 36px 32px; max-width: 340px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  text-align: center; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#reminder-box .r-icon { font-size: 48px; margin-bottom: 12px; }
+#reminder-box h3 { font-size: 18px; font-weight: 700; color: var(--brown-deep); margin-bottom: 8px; }
+#reminder-box p  { font-size: 13px; color: #999; margin-bottom: 24px; line-height: 1.5; }
+#reminder-box button {
+  padding: 11px 28px; background: var(--home-color);
+  color: white; border: none; border-radius: 10px;
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+#reminder-box button:hover { opacity: 0.85; }
+
+/* ── Divider between legend and table ── */
+.cal-gap { height: 16px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="auth">
+  <h1>📅 Работен календар</h1>
+  <p>Влез в своя акаунт</p>
+  <input id="user" placeholder="Потребителско име" onkeydown="if(event.key==='Enter')login()">
+  <input id="pass" type="password" placeholder="Парола" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()">Вход</button>
+  <div id="auth-error"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- Full-width top section -->
+  <div class="app-top">
+    <div class="cal-header">
+      <button class="nav-btn" onclick="prevMonth()">&#8249;</button>
+      <h2 id="title"></h2>
+      <button class="nav-btn" onclick="nextMonth()">&#8250;</button>
+    </div>
+
+    <div class="type-buttons">
+      <button class="type-btn office active" onclick="setType('office',this)">🏢 Офис</button>
+      <button class="type-btn home"          onclick="setType('home',this)">🏠 Хоум</button>
+      <button class="type-btn duty"          onclick="setType('duty',this)">🚑 Дежурство</button>
+      <button class="type-btn vacation"      onclick="setType('vacation',this)">🌴 Отпуск</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot weekend"></div>Уикенд</div>
+      <div class="legend-item"><div class="legend-dot holiday"></div>Официален празник</div>
+      <div class="legend-item"><div class="legend-dot office"></div>Офис</div>
+      <div class="legend-item"><div class="legend-dot home"></div>Хоум</div>
+      <div class="legend-item"><div class="legend-dot duty"></div>Дежурство</div>
+      <div class="legend-item"><div class="legend-dot vacation"></div>Отпуск</div>
+    </div>
+  </div>
+
+  <!-- Two-column body -->
+  <div class="app-body">
+
+    <!-- Left: calendar -->
+    <div class="app-left">
+      <div class="cal-gap"></div>
+      <table id="cal"></table>
+    </div>
+
+    <!-- Right: stats -->
+    <div class="app-right">
+      <div class="panel">
+        <div class="panel-title">Статистика</div>
+
+        <div class="stat-meta">
+          <div class="stat-meta-row">
+            <span>✅ Работни дни</span>
+            <strong id="effective-workdays">0</strong>
+          </div>
+          <div class="stat-meta-row highlight">
+            <span>🏠 Max хоум</span>
+            <strong id="home-limit">0</strong>
+          </div>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <div class="stat-row">
+          <span class="stat-label">🏢 Офис</span>
+          <span class="stat-val" id="val-office">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">🏠 Хоум</span>
+          <span class="stat-val" id="val-home">0 / 0</span>
+        </div>
+
+        <div id="home-alarm">⚠️ Надвишен лимит!</div>
+        <div class="ratio-note" id="ratio-note"></div>
+
+        <div class="stat-divider"></div>
+
+        <div class="stat-row" style="opacity:0.75">
+          <span class="stat-label">🚑 Дежурство</span>
+          <span class="stat-val" id="val-duty">0</span>
+        </div>
+        <div class="stat-row" style="opacity:0.75">
+          <span class="stat-label">🌴 Отпуск</span>
+          <span class="stat-val" id="val-vacation">0</span>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <button class="clear-btn" onclick="clearAll()">🗑 Изчисти месеца</button>
+        <a class="hr-btn" href="https://auth-prodweb.energo-pro.bg/Account/Login" target="_blank" rel="noopener">👩‍💼 OMEX портал</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let userId      = null;
+let currentType = "office";
+
+const cal      = document.getElementById("cal");
+const months   = ["Януари","Февруари","Март","Април","Май","Юни","Юли","Август","Септември","Октомври","Ноември","Декември"];
+const todayObj = new Date();
+const todayStr = fmt(todayObj.getFullYear(), todayObj.getMonth()+1, todayObj.getDate());
+
+let currentMonth = todayObj.getMonth();
+let currentYear  = todayObj.getFullYear();
+
+function storageKey()   { return `cal_days_${userId}`; }
+function loadAllDays()  { try { return JSON.parse(localStorage.getItem(storageKey()) || "{}"); } catch { return {}; } }
+function saveAllDays(o) { localStorage.setItem(storageKey(), JSON.stringify(o)); }
+
+function getLocalHolidays() {
+  try { return JSON.parse(localStorage.getItem("cal_localHolidays") || "{}"); } catch { return {}; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+function fmt(y, m, d) {
+  return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+
+function addDays(dateUTC, n) {
+  const d = new Date(dateUTC);
+  d.setUTCDate(d.getUTCDate() + n);
+  return fmt(d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate());
+}
+
+function getOrthodoxEaster(year) {
+  const a = year%4, b = year%7, c = year%19;
+  const d = (19*c+15)%30, e = (2*a+4*b-d+34)%7;
+  const month = Math.floor((d+e+114)/31);
+  const day   = ((d+e+114)%31)+1;
+  return new Date(Date.UTC(year, month-1, day+13));
+}
+
+function getBgHolidays(year) {
+  const easter    = getOrthodoxEaster(year);
+  const easterStr = fmt(easter.getUTCFullYear(), easter.getUTCMonth()+1, easter.getUTCDate());
+  return {
+    [`${year}-01-01`]: "Нова година",
+    [`${year}-03-03`]: "Освобождение на България",
+    [`${year}-05-01`]: "Ден на труда",
+    [`${year}-05-06`]: "Гергьовден",
+    [`${year}-05-24`]: "Ден на просветата",
+    [`${year}-05-25`]: "Ден на просветата",
+    [`${year}-08-15`]: "Варна",
+    [`${year}-09-06`]: "Съединение на България",
+    [`${year}-09-22`]: "Независимост на България",
+    [`${year}-11-01`]: "Ден на народните будители",
+    [`${year}-12-24`]: "Бъдни вечер",
+    [`${year}-12-25`]: "Коледа",
+    [`${year}-12-26`]: "Коледа",
+    [addDays(easter,-2)]: "Велики петък",
+    [addDays(easter,-1)]: "Велика събота",
+    [easterStr]:           "Великден",
+    [addDays(easter, 1)]:  "Великденски понеделник",
+  };
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════════ */
+async function login() {
+  const uname = document.getElementById("user").value.trim();
+  const pass  = document.getElementById("pass").value;
+  const errEl = document.getElementById("auth-error");
+  errEl.textContent = "";
+  if (!uname) { errEl.textContent = "Въведи потребителско име."; return; }
+
+  try {
+    const res = await fetch("http://localhost:3000/login", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ username: uname, password: pass })
+    });
+    if (!res.ok) { errEl.textContent = "Грешно потребителско име или парола."; return; }
+    userId = (await res.json()).userId;
+    await syncAllFromServer();
+    startApp();
+  } catch (err) {
+    console.warn("Сървърът не е достъпен, демо режим:", err);
+    userId = uname;
+    startApp();
+  }
+}
+
+async function syncAllFromServer() {
+  try {
+    const res = await fetch(`http://localhost:3000/days/all/${userId}`);
+    if (!res.ok) return;
+    const rows = await res.json();
+    const stored = {};
+    for (const row of rows) {
+      const raw = row.date;
+      const key = (typeof raw === "string") ? raw.slice(0, 10)
+        : fmt(new Date(raw).getFullYear(), new Date(raw).getMonth()+1, new Date(raw).getDate());
+      stored[key] = row.type;
+    }
+    saveAllDays(stored);
+  } catch (err) {
+    console.warn("syncAllFromServer failed:", err);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   HOME OFFICE REMINDER — 08:30 on workdays
+═══════════════════════════════════════════════════════ */
+function scheduleReminder() {
+  const now    = new Date();
+  const day    = now.getDay(); // 0=Sun, 6=Sat
+  if (day === 0 || day === 6) return; // skip weekends
+
+  // Already dismissed today?
+  const todayKey = `reminder_dismissed_${fmt(now.getFullYear(), now.getMonth()+1, now.getDate())}`;
+  if (localStorage.getItem(todayKey)) return;
+
+  const target = new Date(now);
+  target.setHours(08, 30, 0, 0);
+
+  const msUntil = target - now;
+
+  if (msUntil > 0) {
+    // Schedule for 08:30
+    setTimeout(showReminder, msUntil);
+  } else if (msUntil > -30 * 60 * 1000) {
+    // Within 30 min after 08:30 — show immediately
+    showReminder();
+  }
+  // After 09:00 — too late, skip for today
+}
+
+function showReminder() {
+  const now    = new Date();
+  const day    = now.getDay();
+  if (day === 0 || day === 6) return;
+  const todayKey = `reminder_dismissed_${fmt(now.getFullYear(), now.getMonth()+1, now.getDate())}`;
+  if (localStorage.getItem(todayKey)) return;
+  document.getElementById("reminder-overlay").classList.add("show");
+}
+
+function dismissReminder() {
+  const now      = new Date();
+  const todayKey = `reminder_dismissed_${fmt(now.getFullYear(), now.getMonth()+1, now.getDate())}`;
+  localStorage.setItem(todayKey, "1");
+  document.getElementById("reminder-overlay").classList.remove("show");
+}
+
+// Kick off after login
+function startApp() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("app").style.display  = "block";
+  generate();
+  scheduleReminder();
+}
+
+/* ═══════════════════════════════════════════════════════
+   TYPE / NAV
+═══════════════════════════════════════════════════════ */
+function setType(t, btn) {
+  currentType = t;
+  document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+function prevMonth() { if (--currentMonth < 0)  { currentMonth=11; currentYear--; } generate(); }
+function nextMonth() { if (++currentMonth > 11) { currentMonth=0;  currentYear++; } generate(); }
+
+/* ═══════════════════════════════════════════════════════
+   GENERATE
+═══════════════════════════════════════════════════════ */
+function generate() {
+  cal.innerHTML = "";
+  document.getElementById("title").textContent = `${months[currentMonth]} ${currentYear}`;
+
+  const bgHolidays  = getBgHolidays(currentYear);
+  const localHols   = getLocalHolidays();
+  const allDays     = loadAllDays();
+
+  const header = document.createElement("tr");
+  ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"].forEach(label => {
+    const th = document.createElement("th"); th.textContent = label; header.appendChild(th);
+  });
+  cal.appendChild(header);
+
+  let first = new Date(Date.UTC(currentYear, currentMonth, 1)).getUTCDay();
+  first = (first === 0) ? 6 : first - 1;
+  const daysInMonth = new Date(Date.UTC(currentYear, currentMonth+1, 0)).getUTCDate();
+
+  const tbody = document.createElement("tbody");
+  let day = 1;
+
+  for (let i = 0; i < 42; i++) {
+    if (i % 7 === 0) { var row = document.createElement("tr"); tbody.appendChild(row); }
+    const td  = document.createElement("td");
+    const col = i % 7;
+
+    if (i >= first && day <= daysInMonth) {
+      const dateStr = fmt(currentYear, currentMonth+1, day);
+      const weekend = col >= 5;
+      const bgHol   = bgHolidays[dateStr];
+      const locHol  = localHols[dateStr];
+      const saved   = allDays[dateStr];
+
+      td.textContent  = day;
+      td.dataset.date = dateStr;
+      if (dateStr === todayStr) td.classList.add("today");
+
+      if (bgHol) {
+        td.classList.add("holiday");
+        td.dataset.label = bgHol;
+        if (saved === "duty") {
+          td.classList.remove("holiday");
+          td.classList.add("duty");
+          td.dataset.type = "duty";
+          td.addEventListener("click", clickDay);
+        }
+      } else if (locHol) {
+        td.classList.add("local-holiday");
+        td.dataset.label = locHol;
+        if (saved === "duty") {
+          td.classList.remove("local-holiday");
+          td.classList.add("duty");
+          td.dataset.type = "duty";
+          td.addEventListener("click", clickDay);
+        }
+      } else if (weekend) {
+        td.classList.add("weekend");
+        if (saved === "duty") {
+          td.classList.add("duty");
+          td.dataset.type = "duty";
+        }
+        td.addEventListener("click", clickDay);
+      } else {
+        if (saved) { td.classList.add(saved); td.dataset.type = saved; }
+        td.addEventListener("click", clickDay);
+      }
+      day++;
+    }
+    row.appendChild(td);
+  }
+
+  cal.appendChild(tbody);
+  updateStats();
+}
+
+/* ═══════════════════════════════════════════════════════
+   CLICK DAY
+═══════════════════════════════════════════════════════ */
+function clickDay() {
+  const date       = this.dataset.date;
+  const allDays    = loadAllDays();
+  const isWeekend  = this.classList.contains("weekend");
+  const isBgHol    = this.classList.contains("holiday");
+  const isLocHol   = this.classList.contains("local-holiday");
+  const prev       = this.dataset.type || "";
+
+  if ((isWeekend || isBgHol || isLocHol) && currentType !== "duty") return;
+
+  this.classList.remove("office","home","duty","vacation");
+
+  if (prev === currentType) {
+    this.dataset.type = "";
+    delete allDays[date];
+  } else {
+    this.classList.add(currentType);
+    this.dataset.type = currentType;
+    allDays[date]     = currentType;
+  }
+
+  saveAllDays(allDays);
+  syncDay(date, allDays[date] || null);
+  updateStats();
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════════ */
+function updateStats() {
+  const year        = currentYear;
+  const month       = currentMonth + 1;
+  const monthPad    = String(month).padStart(2,"0");
+  const prefix      = `${year}-${monthPad}-`;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const bgHolidays  = getBgHolidays(year);
+  const localHols   = getLocalHolidays();
+
+  let effectiveWorkdays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = fmt(year, month, d);
+    const dow     = new Date(Date.UTC(year, month-1, d)).getUTCDay();
+    if (dow === 0 || dow === 6)    continue;
+    if (bgHolidays[dateStr])       continue;
+    if (localHols[dateStr])        continue;
+    effectiveWorkdays++;
+  }
+
+  const maxHomeDays   = Math.floor(effectiveWorkdays / 2);
+  const minOfficeDays = Math.ceil(effectiveWorkdays / 2);
+
+  document.getElementById("effective-workdays").textContent = effectiveWorkdays;
+  document.getElementById("home-limit").textContent         = maxHomeDays;
+
+  const allDays = loadAllDays();
+  const counts  = { office:0, home:0, duty:0, vacation:0 };
+  for (const [key, type] of Object.entries(allDays)) {
+    if (key.startsWith(prefix) && counts[type] !== undefined) counts[type]++;
+  }
+
+  document.getElementById("val-office").textContent = counts.office;
+  const homeValEl = document.getElementById("val-home");
+  homeValEl.textContent = `${counts.home} / ${maxHomeDays}`;
+
+  const over = counts.home > maxHomeDays;
+  homeValEl.classList.toggle("over", over);
+  document.getElementById("home-alarm").style.display = over ? "block" : "none";
+
+  document.getElementById("val-duty").textContent     = counts.duty;
+  document.getElementById("val-vacation").textContent  = counts.vacation;
+
+  document.getElementById("ratio-note").textContent = effectiveWorkdays % 2 !== 0
+    ? `⚖️ Нечетен → мин. ${minOfficeDays} офис / макс. ${maxHomeDays} хоум`
+    : `⚖️ Четен → 50/50 (${minOfficeDays} / ${maxHomeDays})`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SERVER SYNC
+═══════════════════════════════════════════════════════ */
+async function syncDay(date, type) {
+  try {
+    await fetch("http://localhost:3000/save", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ date, type, userId })
+    });
+  } catch { }
+}
+
+/* ═══════════════════════════════════════════════════════
+   CLEAR MONTH
+═══════════════════════════════════════════════════════ */
+function clearAll() {
+  const monthPad = String(currentMonth+1).padStart(2,"0");
+  const prefix   = `${currentYear}-${monthPad}-`;
+  const allDays  = loadAllDays();
+  for (const key of Object.keys(allDays)) {
+    if (key.startsWith(prefix)) delete allDays[key];
+  }
+  saveAllDays(allDays);
+  try { fetch(`http://localhost:3000/clear/${userId}/${currentYear}/${currentMonth+1}`, { method:"DELETE" }); } catch {}
+  generate();
+}
+</script>
+
+<!-- REMINDER OVERLAY -->
+<div id="reminder-overlay">
+  <div id="reminder-box">
+    <div class="r-icon">🏠</div>
+    <h3>Не забравяй молбата за хоум!</h3>
+    <p>Днес е работен ден — подай молба за<br><strong>хоум офис</strong> в Omex.</p>
+    <button onclick="dismissReminder()">Разбрах ✓</button>
+  </div>
+</div>
+
+</body>
+</html>
