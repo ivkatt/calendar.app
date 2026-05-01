@@ -433,7 +433,7 @@ async function login() {
   if (!uname) { errEl.textContent = "Въведи потребителско име."; return; }
 
   try {
-    const res = await fetch("http://localhost:3000/login", {
+    const res = await fetch("/login", {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ username: uname, password: pass })
     });
@@ -450,7 +450,7 @@ async function login() {
 
 async function syncAllFromServer() {
   try {
-    const res = await fetch(`http://localhost:3000/days/all/${userId}`);
+    await fetch("/save", {
     if (!res.ok) return;
     const rows = await res.json();
     const stored = {};
@@ -691,12 +691,13 @@ function updateStats() {
 ═══════════════════════════════════════════════════════ */
 async function syncDay(date, type) {
   try {
-    await fetch("http://localhost:3000/save", {
+    await fetch("/save", {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ date, type, userId })
     });
   } catch { }
 }
+
 
 /* ═══════════════════════════════════════════════════════
    CLEAR MONTH
@@ -709,7 +710,7 @@ function clearAll() {
     if (key.startsWith(prefix)) delete allDays[key];
   }
   saveAllDays(allDays);
-  try { fetch(`http://localhost:3000/clear/${userId}/${currentYear}/${currentMonth+1}`, { method:"DELETE" }); } catch {}
+  fetch(`/clear/${userId}/${currentYear}/${currentMonth+1}`, { method:"DELETE" }); } catch {}
   generate();
 }
 </script>
