@@ -501,6 +501,7 @@ function dismissReminder() {
 function startApp() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("app").style.display  = "block";
+  document.getElementById("username-display").textContent = document.getElementById("user").value.trim();
   generate();
   scheduleReminder();
 }
