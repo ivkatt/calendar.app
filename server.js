@@ -35,13 +35,16 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
+  console.log("Login attempt:", username, "pass length:", password?.length);
   db.query(
     "SELECT id, password FROM users WHERE username=?",
     [username],
     async (err, results) => {
       if (err) { console.error(err); return res.status(500).send("Login error"); }
       if (results.length === 0) return res.status(401).send("Login failed");
+      console.log("Found user, hash length:", results[0].password?.length);
       const match = await bcrypt.compare(password, results[0].password);
+      console.log("Match result:", match);
       if (!match) return res.status(401).send("Login failed");
       res.json({ userId: results[0].id });
     }
