@@ -448,9 +448,10 @@ async function login() {
   }
 }
 
+
 async function syncAllFromServer() {
   try {
-    await fetch("/save", {
+    const res = await fetch(`/days/all/${userId}`);
     if (!res.ok) return;
     const rows = await res.json();
     const stored = {};
@@ -465,7 +466,6 @@ async function syncAllFromServer() {
     console.warn("syncAllFromServer failed:", err);
   }
 }
-
 
 /* ═══════════════════════════════════════════════════════
    HOME OFFICE REMINDER — 08:30 on workdays
@@ -702,7 +702,7 @@ async function syncDay(date, type) {
 /* ═══════════════════════════════════════════════════════
    CLEAR MONTH
 ═══════════════════════════════════════════════════════ */
-function clearAll() {
+  function clearAll() {
   const monthPad = String(currentMonth+1).padStart(2,"0");
   const prefix   = `${currentYear}-${monthPad}-`;
   const allDays  = loadAllDays();
@@ -710,7 +710,7 @@ function clearAll() {
     if (key.startsWith(prefix)) delete allDays[key];
   }
   saveAllDays(allDays);
-  fetch(`/clear/${userId}/${currentYear}/${currentMonth+1}`, { method:"DELETE" }); } catch {}
+  try { fetch(`/clear/${userId}/${currentYear}/${currentMonth+1}`, { method:"DELETE" }); } catch {}
   generate();
 }
 </script>
