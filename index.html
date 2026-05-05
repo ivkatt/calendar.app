@@ -583,8 +583,7 @@ function updateStats() {
     if (dow === 0 || dow === 6)            continue; // weekend
     if (bgHolidays[dateStr])               continue; // official holiday
     if (localHols[dateStr])                continue; // local holiday
-    if (allDays[dateStr] === "dayoff")     continue; // user marked dayoff
-    effectiveWorkdays++;
+      effectiveWorkdays++;
   }
 
   const maxHomeDays   = Math.floor(effectiveWorkdays / 2);
