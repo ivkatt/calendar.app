@@ -18,6 +18,7 @@
   --home-color: #2ea86b;
   --duty-color: #9C27B0;
   --vacation-color: #FF9800;
+  --dayoff-color: #78909C;
   --weekend-color: #ffeb9e;
   --holiday-color: #ee4f4a;
   --local-holiday-color: #ef6c00;
@@ -32,7 +33,6 @@ body {
   padding: 24px;
 }
 
-/* ── LOGIN ── */
 #auth {
   background: var(--surface); border-radius: 24px;
   padding: 52px 44px; box-shadow: var(--shadow);
@@ -55,14 +55,10 @@ body {
   cursor: pointer; transition: opacity 0.2s, transform 0.1s;
 }
 #auth button:hover { opacity: 0.88; transform: translateY(-1px); }
-#btn-register {
-  background: linear-gradient(135deg, #2ea86b, #4fc88a);
-  margin-top: 8px;
-}
+#btn-register { background: linear-gradient(135deg, #2ea86b, #4fc88a); margin-top: 8px; }
 #auth-error { color: #c0392b; font-size: 13px; margin-top: 10px; min-height: 18px; }
 #auth-error.success { color: #2ea86b; }
 
-/* ── APP — two-column layout ── */
 #app {
   display: none;
   background: var(--surface);
@@ -74,18 +70,12 @@ body {
 }
 
 .app-top { width: 100%; }
-
-.app-body {
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  margin-top: 20px;
-}
-
+.app-body { display: flex; gap: 32px; align-items: flex-start; margin-top: 20px; }
 .app-left  { flex: 1 1 auto; min-width: 0; }
 .app-right { flex: 0 0 230px; width: 230px; }
 
-/* ── HEADER ── */
+.user-bar { text-align: right; font-size: 13px; color: #aaa; margin-bottom: 12px; }
+
 .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .cal-header h2 {
   font-size: 22px; font-weight: 700; color: var(--brown-deep);
@@ -98,7 +88,6 @@ body {
 }
 .nav-btn:hover { background: #e8c9b8; transform: scale(1.08); }
 
-/* ── TYPE BUTTONS ── */
 .type-buttons { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
 .type-btn {
   padding: 8px 16px; border: 2px solid transparent; border-radius: 20px;
@@ -114,8 +103,8 @@ body {
 .type-btn.home     { background: var(--home-color); }
 .type-btn.duty     { background: var(--duty-color); }
 .type-btn.vacation { background: var(--vacation-color); }
+.type-btn.dayoff   { background: var(--dayoff-color); }
 
-/* ── LEGEND ── */
 .legend {
   display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
   margin-bottom: 0; padding: 10px 0;
@@ -125,13 +114,12 @@ body {
 .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 .legend-dot.weekend  { background: var(--weekend-color); border: 1px solid #e0d080; }
 .legend-dot.holiday  { background: var(--holiday-color); }
-.legend-dot.local-h  { background: var(--local-holiday-color); }
 .legend-dot.office   { background: var(--office-color); }
 .legend-dot.home     { background: var(--home-color); }
 .legend-dot.duty     { background: var(--duty-color); }
 .legend-dot.vacation { background: var(--vacation-color); }
+.legend-dot.dayoff   { background: var(--dayoff-color); }
 
-/* ── CALENDAR TABLE ── */
 table { border-collapse: separate; border-spacing: 4px; width: 100%; }
 th { font-size: 11px; font-weight: 600; color: #c5b8b0; padding: 4px 0 12px; text-transform: uppercase; letter-spacing: 1px; }
 td {
@@ -141,22 +129,21 @@ td {
   position: relative; user-select: none; text-align: center; vertical-align: middle;
 }
 td:empty { cursor: default; pointer-events: none; }
-td:not(:empty):not(.no-click):hover { filter: brightness(0.88); transform: scale(1.09); z-index: 1; }
+td:not(:empty):hover { filter: brightness(0.88); transform: scale(1.09); z-index: 1; }
 
 td.weekend       { background: var(--weekend-color); color: #a89a60; font-weight: 400; }
 td.today         { outline: 2.5px solid var(--brown-deep); outline-offset: -2px; font-weight: 800; }
-td.holiday       { background: var(--holiday-color); color: white; cursor: default; pointer-events: none; }
-td.local-holiday { background: var(--local-holiday-color); color: white; cursor: default; pointer-events: none; }
+td.holiday       { background: var(--holiday-color); color: white; }
+td.local-holiday { background: var(--local-holiday-color); color: white; }
 
 td.office   { background: var(--office-color); color: white; }
 td.home     { background: var(--home-color); color: white; }
 td.vacation { background: var(--vacation-color); color: white; }
 td.duty     { background: var(--duty-color); color: white; }
-
-td.weekend.duty { background: var(--duty-color); color: white; cursor: pointer; pointer-events: auto; }
+td.dayoff   { background: var(--dayoff-color); color: white; }
 
 td.office.today, td.home.today, td.duty.today,
-td.vacation.today, td.holiday.today { outline-color: rgba(255,255,255,0.8); }
+td.vacation.today, td.holiday.today, td.dayoff.today { outline-color: rgba(255,255,255,0.8); }
 
 td.holiday::after, td.local-holiday::after {
   content: attr(data-label);
@@ -168,13 +155,11 @@ td.holiday::after, td.local-holiday::after {
 }
 td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
 
-/* ── PANEL (right column) ── */
 .panel { position: sticky; top: 24px; }
 .panel-title {
   font-size: 11px; font-weight: 600; color: #c5b8b0; margin-bottom: 12px;
   text-align: center; text-transform: uppercase; letter-spacing: 1px;
 }
-
 .stat-meta { background: #f8f6f4; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
 .stat-meta-row {
   display: flex; justify-content: space-between; align-items: center;
@@ -183,15 +168,12 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
 .stat-meta-row + .stat-meta-row { border-top: 1px solid #ede8e5; }
 .stat-meta-row strong { color: var(--brown-deep); font-weight: 600; font-family: 'DM Mono', monospace; font-size: 13px; }
 .stat-meta-row.highlight strong { color: #1a6e3c; font-size: 14px; }
-
 .stat-divider { height: 1px; background: #f0ebe8; margin: 12px 0; }
-
 .stat-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
 .stat-label { font-size: 12px; color: #888; }
 .stat-val { font-size: 13px; font-weight: 600; color: var(--brown-deep); font-family: 'DM Mono', monospace; }
 .stat-val.over { color: #c0392b; }
 
-/* ── HOME LIMIT ALARM ── */
 #home-alarm {
   display: none;
   background: #fdecea; border: 1.5px solid #f5c6c4; border-radius: 10px;
@@ -200,7 +182,6 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
   text-align: center; animation: pulse 1.5s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-
 .ratio-note { text-align: center; font-size: 10px; color: #bbb; margin-top: 4px; line-height: 1.4; }
 
 .clear-btn {
@@ -216,15 +197,12 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
   background: linear-gradient(135deg, #3b7dd8, #5a9af5);
   color: white; border: none; border-radius: 10px;
   font-family: inherit; font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: opacity 0.2s; text-decoration: none;
-  text-align: center;
+  cursor: pointer; transition: opacity 0.2s; text-decoration: none; text-align: center;
 }
 .hr-btn:hover { opacity: 0.85; }
 
-/* ── Reminder overlay ── */
 #reminder-overlay {
-  display: none;
-  position: fixed; inset: 0;
+  display: none; position: fixed; inset: 0;
   background: rgba(61,47,39,0.45); backdrop-filter: blur(3px);
   z-index: 100; align-items: center; justify-content: center;
 }
@@ -245,13 +223,11 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
   font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 #reminder-box button:hover { opacity: 0.85; }
-
 .cal-gap { height: 16px; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="auth">
   <h1>📅 Работен календар</h1>
   <p>Влез или създай акаунт</p>
@@ -262,9 +238,9 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
   <div id="auth-error"></div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="app-top">
+    <div class="user-bar">👤 <span id="username-display"></span></div>
     <div class="cal-header">
       <button class="nav-btn" onclick="prevMonth()">&#8249;</button>
       <h2 id="title"></h2>
@@ -276,6 +252,7 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
       <button class="type-btn home"          onclick="setType('home',this)">🏠 Хоум</button>
       <button class="type-btn duty"          onclick="setType('duty',this)">🚑 Дежурство</button>
       <button class="type-btn vacation"      onclick="setType('vacation',this)">🌴 Отпуск</button>
+      <button class="type-btn dayoff"        onclick="setType('dayoff',this)">🛌 Почивен ден</button>
     </div>
 
     <div class="legend">
@@ -285,6 +262,7 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
       <div class="legend-item"><div class="legend-dot home"></div>Хоум</div>
       <div class="legend-item"><div class="legend-dot duty"></div>Дежурство</div>
       <div class="legend-item"><div class="legend-dot vacation"></div>Отпуск</div>
+      <div class="legend-item"><div class="legend-dot dayoff"></div>Почивен ден</div>
     </div>
   </div>
 
@@ -297,7 +275,6 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
     <div class="app-right">
       <div class="panel">
         <div class="panel-title">Статистика</div>
-
         <div class="stat-meta">
           <div class="stat-meta-row">
             <span>✅ Работни дни</span>
@@ -308,9 +285,7 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
             <strong id="home-limit">0</strong>
           </div>
         </div>
-
         <div class="stat-divider"></div>
-
         <div class="stat-row">
           <span class="stat-label">🏢 Офис</span>
           <span class="stat-val" id="val-office">0</span>
@@ -319,12 +294,9 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
           <span class="stat-label">🏠 Хоум</span>
           <span class="stat-val" id="val-home">0 / 0</span>
         </div>
-
         <div id="home-alarm">⚠️ Надвишен лимит!</div>
         <div class="ratio-note" id="ratio-note"></div>
-
         <div class="stat-divider"></div>
-
         <div class="stat-row" style="opacity:0.75">
           <span class="stat-label">🚑 Дежурство</span>
           <span class="stat-val" id="val-duty">0</span>
@@ -333,9 +305,11 @@ td.holiday:hover::after, td.local-holiday:hover::after { opacity: 1; }
           <span class="stat-label">🌴 Отпуск</span>
           <span class="stat-val" id="val-vacation">0</span>
         </div>
-
+        <div class="stat-row" style="opacity:0.75">
+          <span class="stat-label">🛌 Почивни дни</span>
+          <span class="stat-val" id="val-dayoff">0</span>
+        </div>
         <div class="stat-divider"></div>
-
         <button class="clear-btn" onclick="clearAll()">🗑 Изчисти месеца</button>
         <a class="hr-btn" href="https://auth-prodweb.energo-pro.bg/Account/Login" target="_blank" rel="noopener">👩‍💼 OMEX портал</a>
       </div>
@@ -406,8 +380,7 @@ async function register() {
   const uname = document.getElementById("user").value.trim();
   const pass  = document.getElementById("pass").value;
   const errEl = document.getElementById("auth-error");
-  errEl.className = "";
-  errEl.textContent = "";
+  errEl.className = ""; errEl.textContent = "";
   if (!uname || !pass) { errEl.textContent = "Въведи потребителско име и парола."; return; }
   try {
     const res = await fetch("/register", {
@@ -417,19 +390,15 @@ async function register() {
     if (!res.ok) { errEl.textContent = "Грешка – потребителят може да съществува."; return; }
     errEl.className = "success";
     errEl.textContent = "Регистрацията е успешна! Влез с акаунта си.";
-  } catch {
-    errEl.textContent = "Грешка при свързване.";
-  }
+  } catch { errEl.textContent = "Грешка при свързване."; }
 }
 
 async function login() {
   const uname = document.getElementById("user").value.trim();
   const pass  = document.getElementById("pass").value;
   const errEl = document.getElementById("auth-error");
-  errEl.className = "";
-  errEl.textContent = "";
+  errEl.className = ""; errEl.textContent = "";
   if (!uname) { errEl.textContent = "Въведи потребителско име."; return; }
-
   try {
     const res = await fetch("/login", {
       method: "POST", headers: {"Content-Type": "application/json"},
@@ -440,7 +409,7 @@ async function login() {
     await syncAllFromServer();
     startApp();
   } catch (err) {
-    console.warn("Сървърът не е достъпен:", err);
+    console.warn("Грешка:", err);
     errEl.textContent = "Грешка при свързване със сървъра.";
   }
 }
@@ -458,9 +427,7 @@ async function syncAllFromServer() {
       stored[key] = row.type;
     }
     saveAllDays(stored);
-  } catch (err) {
-    console.warn("syncAllFromServer failed:", err);
-  }
+  } catch (err) { console.warn("syncAllFromServer failed:", err); }
 }
 
 function scheduleReminder() {
@@ -472,11 +439,8 @@ function scheduleReminder() {
   const target = new Date(now);
   target.setHours(8, 30, 0, 0);
   const msUntil = target - now;
-  if (msUntil > 0) {
-    setTimeout(showReminder, msUntil);
-  } else if (msUntil > -30 * 60 * 1000) {
-    showReminder();
-  }
+  if (msUntil > 0) { setTimeout(showReminder, msUntil); }
+  else if (msUntil > -30 * 60 * 1000) { showReminder(); }
 }
 
 function showReminder() {
@@ -498,6 +462,7 @@ function dismissReminder() {
 function startApp() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("app").style.display  = "block";
+  document.getElementById("username-display").textContent = document.getElementById("user").value.trim();
   generate();
   scheduleReminder();
 }
@@ -550,32 +515,20 @@ function generate() {
       if (bgHol) {
         td.classList.add("holiday");
         td.dataset.label = bgHol;
-        if (saved === "duty") {
-          td.classList.remove("holiday");
-          td.classList.add("duty");
-          td.dataset.type = "duty";
-          td.addEventListener("click", clickDay);
-        }
       } else if (locHol) {
         td.classList.add("local-holiday");
         td.dataset.label = locHol;
-        if (saved === "duty") {
-          td.classList.remove("local-holiday");
-          td.classList.add("duty");
-          td.dataset.type = "duty";
-          td.addEventListener("click", clickDay);
-        }
       } else if (weekend) {
         td.classList.add("weekend");
-        if (saved === "duty") {
-          td.classList.add("duty");
-          td.dataset.type = "duty";
-        }
-        td.addEventListener("click", clickDay);
-      } else {
-        if (saved) { td.classList.add(saved); td.dataset.type = saved; }
-        td.addEventListener("click", clickDay);
       }
+
+      // Apply saved type on top (works for all day types including holidays/weekends)
+      if (saved) {
+        td.classList.add(saved);
+        td.dataset.type = saved;
+      }
+
+      td.addEventListener("click", clickDay);
       day++;
     }
     row.appendChild(td);
@@ -593,9 +546,10 @@ function clickDay() {
   const isLocHol  = this.classList.contains("local-holiday");
   const prev      = this.dataset.type || "";
 
+  // On weekends and official holidays only duty is allowed
   if ((isWeekend || isBgHol || isLocHol) && currentType !== "duty") return;
 
-  this.classList.remove("office","home","duty","vacation");
+  this.classList.remove("office","home","duty","vacation","dayoff");
 
   if (prev === currentType) {
     this.dataset.type = "";
@@ -619,14 +573,17 @@ function updateStats() {
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const bgHolidays  = getBgHolidays(year);
   const localHols   = getLocalHolidays();
+  const allDays     = loadAllDays();
 
+  // Effective workdays = weekdays excluding official holidays and dayoff
   let effectiveWorkdays = 0;
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = fmt(year, month, d);
     const dow     = new Date(Date.UTC(year, month-1, d)).getUTCDay();
-    if (dow === 0 || dow === 6)  continue;
-    if (bgHolidays[dateStr])     continue;
-    if (localHols[dateStr])      continue;
+    if (dow === 0 || dow === 6)            continue; // weekend
+    if (bgHolidays[dateStr])               continue; // official holiday
+    if (localHols[dateStr])                continue; // local holiday
+    if (allDays[dateStr] === "dayoff")     continue; // user marked dayoff
     effectiveWorkdays++;
   }
 
@@ -636,13 +593,12 @@ function updateStats() {
   document.getElementById("effective-workdays").textContent = effectiveWorkdays;
   document.getElementById("home-limit").textContent         = maxHomeDays;
 
-  const allDays = loadAllDays();
-  const counts  = { office:0, home:0, duty:0, vacation:0 };
+  const counts = { office:0, home:0, duty:0, vacation:0, dayoff:0 };
   for (const [key, type] of Object.entries(allDays)) {
     if (key.startsWith(prefix) && counts[type] !== undefined) counts[type]++;
   }
 
-  document.getElementById("val-office").textContent = counts.office;
+  document.getElementById("val-office").textContent  = counts.office;
   const homeValEl = document.getElementById("val-home");
   homeValEl.textContent = `${counts.home} / ${maxHomeDays}`;
 
@@ -652,6 +608,7 @@ function updateStats() {
 
   document.getElementById("val-duty").textContent    = counts.duty;
   document.getElementById("val-vacation").textContent = counts.vacation;
+  document.getElementById("val-dayoff").textContent   = counts.dayoff;
 
   document.getElementById("ratio-note").textContent = effectiveWorkdays % 2 !== 0
     ? `⚖️ Нечетен → мин. ${minOfficeDays} офис / макс. ${maxHomeDays} хоум`
@@ -680,7 +637,6 @@ function clearAll() {
 }
 </script>
 
-<!-- REMINDER OVERLAY -->
 <div id="reminder-overlay">
   <div id="reminder-box">
     <div class="r-icon">🏠</div>
